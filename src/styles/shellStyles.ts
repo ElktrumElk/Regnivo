@@ -145,23 +145,27 @@ export const shellStyles = new Estyle()
   })
   .defineMedia({
     "(max-width: 820px)": {
-      shell: { flexDirection: "column" },
+      shell: { flexDirection: "column", height: "100vh", overflow: "hidden" },
       sidebar: {
+        position: "static",
         width: "100%",
         minHeight: "auto",
-        padding: "12px 14px",
+        height: "auto",
+        padding: "10px 12px",
         borderRight: 0,
         borderBottom: "1px solid #242623",
+        overflowY: "visible",
       },
-      brand: { padding: "0 3px 11px" },
-      nav: { flexDirection: "row", overflowX: "auto" },
+      brand: { padding: "0 4px 8px" },
+      nav: { flexDirection: "row", flexWrap: "wrap", overflowX: "auto", gap: "4px" },
       navLabel: { display: "none" },
-      navItem: { flexShrink: 0 },
+      navItem: { flexShrink: 0, padding: "8px 10px", fontSize: "11px" },
       sidebarFooter: { display: "none" },
-      content: { width: "100%" },
-      topbar: { padding: "10px 16px" },
+      content: { width: "100%", height: "calc(100vh - 56px)", minHeight: 0, overflow: "hidden" },
+      topbar: { padding: "8px 14px", minHeight: "56px" },
+      topActions: { flexWrap: "wrap" },
       search: { display: "none" },
-      main: { padding: "24px 16px 40px" },
+      main: { padding: "16px 14px 40px", height: "100%", maxWidth: "100%", overflowY: "auto", overflowX: "hidden" },
     },
   })
   .mount("shell");
