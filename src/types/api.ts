@@ -25,7 +25,17 @@ export interface CheckResult {
   outcome: string
   durationMs: number
   bytesReceived: number
+  bytesSent?: number
   message?: string
+  errorCode?: string
+  error?: string
+  requestHeaders?: Record<string, string>
+  responseHeaders?: Record<string, string>
+  requestBody?: string
+  responseBody?: string
+  timingMs?: Record<string, number>
+  requestSize?: number
+  responseSize?: number
 }
 
 export interface Dashboard {
@@ -45,14 +55,61 @@ export interface Project {
   status: MonitorStatus
 }
 
-export interface MonitorInput {
+export interface Monitor {
+  id: string
+  projectId: string
   name: string
   url: string
-  method: 'GET' | 'HEAD'
+  method: string
   intervalSeconds: number
   timeoutMs: number
   expectedStatus: number[]
   enabled: boolean
+  retryCount: number
+  retryTimeoutMs: number
+  headers: Record<string, string>
+  lastRunAt?: string
+  nextRunAt?: string
+  createdAt: string
+  updatedAt: string
+  status: MonitorStatus
+}
+
+export interface ProjectDetail {
+  project: Project
+  monitors: Monitor[]
+}
+
+export interface MetricPoint {
+  timestamp: string
+  checks: number
+  successful: number
+  failed: number
+  averageResponseMs: number
+  p95ResponseMs: number
+  bytes: number
+}
+
+export interface ProjectMetrics {
+  projectId: string
+  rangeStart: string
+  summary: Summary
+  series: MetricPoint[]
+}
+
+export type MetricRange = '24h' | '7d' | '30d'
+
+export interface MonitorInput {
+  name: string
+  url: string
+  method: string
+  intervalSeconds: number
+  timeoutMs: number
+  expectedStatus: number[]
+  enabled: boolean
+  retryCount?: number
+  retryTimeoutMs?: number
+  headers?: Record<string, string>
 }
 
 export interface Settings {
@@ -66,3 +123,17 @@ export interface Settings {
 
 export interface ApiEnvelope<T> { data: T }
 export interface ApiFailure { error: { message: string } }
+
+export interface User {
+  id: string
+  name: string
+  email: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AuthInput {
+  name?: string
+  email: string
+  password: string
+}

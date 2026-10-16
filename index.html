@@ -5,8 +5,24 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b0c0b" />
-    <meta name="description" content="ServerPulse endpoint monitoring dashboard" />
-    <title>ServerPulse · Monitoring control center</title>
+    <meta name="description" content="Regnivo endpoint monitoring dashboard" />
+    <title>Regnivo · Monitoring control center</title>
+    <!-- Critical first-paint styles: painted before elk-style-rule injects its
+         managed stylesheet, so the dark shell never flashes white on load or
+         route re-render. Keep values in sync with baseStyles.body. -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background-color: #0b0c0b;
+        color: #f3f4ef;
+      }
+      #root {
+        min-height: 100vh;
+        background-color: #0b0c0b;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

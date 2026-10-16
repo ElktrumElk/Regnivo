@@ -1,4 +1,4 @@
-# ServerPulse — Product Scope & Technical Specification
+# Regnivo — Product Scope & Technical Specification
 
 **Document version:** 1.0  
 **Status:** Proposed / ready for implementation planning  
@@ -7,13 +7,13 @@
 **Primary database:** PostgreSQL  
 **Optional infrastructure:** Redis for distributed job coordination and rate limiting
 
-> **Working name:** ServerPulse. Final product name and domain availability require verification.
+> **Working name:** Regnivo. Final product name and domain availability require verification.
 
 ## 1. Executive Summary
 
-ServerPulse is a hosted uptime and HTTP monitoring platform that periodically sends lightweight requests to user-configured server endpoints. Its primary use case is reducing cold starts on services that suspend after inactivity, where this behavior is permitted by the hosting provider. It also provides a reliable monitoring dashboard with historical request metrics, response logs, performance graphs, and manual testing.
+Regnivo is a hosted uptime and HTTP monitoring platform that periodically sends lightweight requests to user-configured server endpoints. Its primary use case is reducing cold starts on services that suspend after inactivity, where this behavior is permitted by the hosting provider. It also provides a reliable monitoring dashboard with historical request metrics, response logs, performance graphs, and manual testing.
 
-**Core promise:** Users configure an endpoint once, and ServerPulse runs scheduled checks on its own backend—even when the user's browser is closed or their device is offline.
+**Core promise:** Users configure an endpoint once, and Regnivo runs scheduled checks on its own backend—even when the user's browser is closed or their device is offline.
 
 **Important limitation:** Scheduled requests cannot guarantee that a third-party provider will keep an instance awake. Providers may enforce sleep policies, minimum intervals, quotas, or prohibit artificial traffic. The product must disclose this and respect provider terms.
 

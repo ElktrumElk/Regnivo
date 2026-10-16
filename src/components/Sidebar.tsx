@@ -1,17 +1,26 @@
-import { Activity, FolderKanban, Gauge, PlusCircle, RadioTower, Settings } from 'lucide-react'
+import { Activity, ArrowLeft, FolderKanban, Gauge, LogOut, PlusCircle, RadioTower, Settings } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useMatch, useNavigate } from 'react-router-dom'
 import { shellStyles } from '../styles/shellStyles.ts'
+import { useAuth } from '../services/AuthState.ts'
 
 interface NavigationItem { label: string; path: string; icon: LucideIcon; end?: boolean }
 
-const navigation: NavigationItem[] = [
+const workspaceNavigation: NavigationItem[] = [
   { label: 'Overview', path: '/app', icon: Gauge, end: true },
   { label: 'Projects', path: '/app/projects', icon: FolderKanban },
   { label: 'Add monitor', path: '/app/monitors/new', icon: PlusCircle },
   { label: 'Activity', path: '/app/activity', icon: Activity },
   { label: 'Settings', path: '/app/settings', icon: Settings },
 ]
+
+function buildProjectNavigation(projectId: string): NavigationItem[] {
+  return [
+    { label: 'Project overview', path: `/app/projects/${projectId}`, icon: Gauge, end: true },
+    { label: 'Request log', path: `/app/projects/${projectId}/logs`, icon: Activity },
+    { label: 'Settings', path: `/app/projects/${projectId}/settings`, icon: Settings },
+  ]
+}
 
 function renderNavigationItem(item: NavigationItem) {
   const ItemIcon = item.icon
@@ -24,27 +33,44 @@ function renderNavigationItem(item: NavigationItem) {
 }
 
 export function Sidebar() {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const projectMatch = useMatch({ path: '/app/projects/:projectId', end: false })
+  const projectId = projectMatch?.params.projectId
+  const initials = user?.name.split(' ').map(firstLetter).join('').slice(0, 2).toUpperCase() ?? 'SP'
+  const projectNav = projectId ? buildProjectNavigation(projectId) : []
+
+  async function handleLogout() { await logout(); navigate('/login', { replace: true }) }
   return (
     <aside className={shellStyles.classes.sidebar}>
       <div className={shellStyles.classes.brand}>
         <div className={shellStyles.classes.brandMark}><RadioTower size={16} aria-hidden="true" /></div>
-        <span>ServerPulse</span>
+        <span>Regnivo</span>
       </div>
       <nav className={shellStyles.classes.nav} aria-label="Primary navigation">
-        <p className={shellStyles.classes.navLabel}>Workspace</p>
-        {navigation.map(renderNavigationItem)}
+        {projectId ? (
+          <>
+            <p className={shellStyles.classes.navLabel}>Project</p>
+            {projectNav.map(renderNavigationItem)}
+            <NavLink to="/app/projects" className={shellStyles.classes.navItem}><ArrowLeft size={16} aria-hidden="true" /><span>All projects</span></NavLink>
+          </>
+        ) : null}
+        {projectId ? null : (
+          <>
+            <p className={shellStyles.classes.navLabel}>Workspace</p>
+            {workspaceNavigation.map(renderNavigationItem)}
+          </>
+        )}
       </nav>
       <div className={shellStyles.classes.sidebarFooter}>
-        <section className={shellStyles.classes.planCard} aria-label="Plan usage">
-          <h2 className={shellStyles.classes.planTitle}>Developer plan</h2>
-          <p className={shellStyles.classes.planText}>2 of 5 monitors active</p>
-          <div className={shellStyles.classes.usageTrack}><div className={shellStyles.classes.usageBar} /></div>
-        </section>
         <div className={shellStyles.classes.user}>
-          <div className={shellStyles.classes.avatar}>DU</div>
-          <div><p className={shellStyles.classes.userName}>Demo User</p><p className={shellStyles.classes.userEmail}>demo@regnivo.local</p></div>
+          <div className={shellStyles.classes.avatar}>{initials}</div>
+          <div className={shellStyles.classes.userDetails}><p className={shellStyles.classes.userName}>{user?.name}</p><p className={shellStyles.classes.userEmail}>{user?.email}</p></div>
+          <button className={shellStyles.classes.logoutButton} type="button" onClick={handleLogout} aria-label="Log out"><LogOut size={14} /></button>
         </div>
       </div>
     </aside>
   )
 }
+
+function firstLetter(value: string) { return value.charAt(0) }

@@ -1,0 +1,26 @@
+import { Estyle } from 'elk-style-rule'
+
+export const authStyles = new Estyle().defineRules({
+  page: { boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '28px', backgroundColor: '#0b0c0b', backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(201,245,107,.08), transparent 38%)' },
+  shell: { display: 'flex', width: '100%', maxWidth: '900px', minHeight: '570px', border: '1px solid #282b27', borderRadius: '16px', overflow: 'hidden', backgroundColor: '#101210', boxShadow: '0 28px 80px rgba(0,0,0,.35)' },
+  story: { boxSizing: 'border-box', display: 'flex', flex: '1 1 50%', flexDirection: 'column', justifyContent: 'space-between', padding: '38px', borderRight: '1px solid #282b27', backgroundColor: '#131612' },
+  brand: { display: 'flex', alignItems: 'center', gap: '10px', color: '#f1f3ec', fontSize: '14px', fontWeight: 700 },
+  mark: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: '30px', height: '30px', borderRadius: '9px', color: '#11140e', backgroundColor: '#c9f56b' },
+  statement: { maxWidth: '330px' },
+  storyTitle: { margin: 0, color: '#eff1e9', fontSize: '31px', fontWeight: 570, lineHeight: 1.12, letterSpacing: '-.045em' },
+  storyText: { margin: '16px 0 0', color: '#747a72', fontSize: '11px', lineHeight: 1.7 },
+  signal: { display: 'flex', alignItems: 'center', gap: '8px', color: '#8f978a', fontSize: '10px' },
+  signalDot: { width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#a8e45e', boxShadow: '0 0 12px rgba(168,228,94,.7)' },
+  panel: { boxSizing: 'border-box', display: 'flex', flex: '1 1 50%', flexDirection: 'column', justifyContent: 'center', padding: '45px' },
+  eyebrow: { margin: '0 0 8px', color: '#858b82', fontSize: '9px', fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase' },
+  title: { margin: 0, color: '#f1f3ec', fontSize: '23px', fontWeight: 600, letterSpacing: '-.035em' },
+  subtitle: { margin: '9px 0 26px', color: '#686d67', fontSize: '10px', lineHeight: 1.55 },
+  form: { display: 'flex', flexDirection: 'column', gap: '15px' },
+  field: { display: 'flex', flexDirection: 'column', gap: '7px' },
+  label: { color: '#a8ada5', fontSize: '10px', fontWeight: 620 },
+  input: { boxSizing: 'border-box', width: '100%', minHeight: '40px', padding: '0 11px', border: '1px solid #30342f', borderRadius: '7px', outline: 0, color: '#e7e9e2', backgroundColor: '#151715', font: 'inherit', fontSize: '11px', '&:focus': { borderColor: '#92ad5d', boxShadow: '0 0 0 2px rgba(201,245,107,.1)' } },
+  button: { minHeight: '40px', marginTop: '4px', border: '1px solid #c9f56b', borderRadius: '7px', color: '#14170f', backgroundColor: '#c9f56b', fontSize: '11px', fontWeight: 750, cursor: 'pointer', '&:hover': { backgroundColor: '#d8ff83' }, '&:disabled': { opacity: .55, cursor: 'wait' } },
+  error: { margin: 0, color: '#e89090', fontSize: '10px', lineHeight: 1.5 },
+  switchText: { margin: '20px 0 0', color: '#6f746d', fontSize: '10px', textAlign: 'center' },
+  link: { color: '#c9f56b', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } },
+}).defineMedia({ '(max-width: 720px)': { page: { padding: '14px' }, shell: { maxWidth: '440px' }, story: { display: 'none' }, panel: { padding: '32px 24px' } } }).mount('auth')

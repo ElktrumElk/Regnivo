@@ -10,4 +10,8 @@ export const tableStyles = new Estyle().defineRules({
   url: { maxWidth: '250px', overflow: 'hidden', color: '#646963', fontSize: '9px', textOverflow: 'ellipsis' },
   code: { display: 'inline-flex', minWidth: '27px', justifyContent: 'center', padding: '3px 6px', border: '1px solid #30342e', borderRadius: '5px', color: '#b7d996', backgroundColor: '#171b15', fontFamily: 'ui-monospace, monospace', fontSize: '9px' },
   source: { color: '#7b8079', textTransform: 'capitalize' },
+  rowActions: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' },
+  actionButton: { display: 'inline-flex', alignItems: 'center', gap: '5px', minHeight: '28px', padding: '0 8px', border: '1px solid #30332f', borderRadius: '6px', color: '#d5d8d0', backgroundColor: '#151715', fontSize: '9px', cursor: 'pointer', '&:hover': { backgroundColor: '#1c1f1b' }, '&:focus-visible': { outline: '2px solid #c9f56b', outlineOffset: '2px' } },
+  emptyRow: { padding: '30px 20px', color: '#777c75', fontSize: '11px', textAlign: 'center' },
+  rowDelete: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '26px', height: '26px', border: '1px solid #30332f', borderRadius: '6px', color: '#8a8f87', backgroundColor: 'transparent', cursor: 'pointer', '&:hover': { color: '#e58c8c', borderColor: '#553333', backgroundColor: '#1d1515' }, '&:disabled': { opacity: .5, cursor: 'not-allowed' } },
 }).mount('table')

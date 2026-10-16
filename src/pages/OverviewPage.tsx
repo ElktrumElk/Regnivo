@@ -11,16 +11,18 @@ import { getDashboard } from '../services/api.ts'
 import { useResource } from '../services/useResource.ts'
 import { dashboardStyles } from '../styles/dashboardStyles.ts'
 import { formatBytes, formatNumber } from '../utils/format.ts'
+import { useAuth } from '../services/AuthState.ts'
 
 export function OverviewPage() {
   const { data, error, loading } = useResource(getDashboard)
+  const { user } = useAuth()
 
   if (loading) return <LoadingPanel />
   if (error || !data) return <ErrorPanel message={error} />
 
   return (
     <>
-      <PageHeader eyebrow="Control center" title="Good evening, Demo" description="Your endpoints are responding normally. Here is the operational picture across every project in the last 30 days." actions={<><Link className={dashboardStyles.classes.secondaryButton} to="/app/projects">View projects</Link><Link className={dashboardStyles.classes.primaryButton} to="/app/monitors/new"><Plus size={14} />Add monitor</Link></>} />
+      <PageHeader eyebrow="Control center" title={`Welcome, ${user?.name ?? 'operator'}`} description="Here is the operational picture across every project in the last 30 days." actions={<><Link className={dashboardStyles.classes.secondaryButton} to="/app/projects">View projects</Link><Link className={dashboardStyles.classes.primaryButton} to="/app/monitors/new"><Plus size={14} />Add monitor</Link></>} />
       <section className={dashboardStyles.classes.metrics} aria-label="Account metrics">
         <MetricCard label="Total checks" value={formatNumber(data.summary.checks)} hint="Last 30 days" delta="Live" />
         <MetricCard label="Active monitors" value={String(data.activeMonitors)} hint={`Across ${data.projectCount} projects`} />
@@ -30,7 +32,7 @@ export function OverviewPage() {
       <section className={dashboardStyles.classes.panels} aria-label="Monitoring charts">
         <article className={dashboardStyles.classes.chartPanel}>
           <div className={dashboardStyles.classes.panelHeader}><div><h2 className={dashboardStyles.classes.panelTitle}>Request telemetry</h2><p className={dashboardStyles.classes.panelMeta}>24-hour service profile · UTC</p></div><div className={dashboardStyles.classes.legend}><span className={dashboardStyles.classes.legendItem}><span className={dashboardStyles.classes.legendDotGreen} />Requests</span><span className={dashboardStyles.classes.legendItem}><span className={dashboardStyles.classes.legendDotBlue} />Latency</span></div></div>
-          <TelemetryChart />
+          <TelemetryChart points={[]} />
         </article>
         <article className={dashboardStyles.classes.healthPanel}>
           <div><h2 className={dashboardStyles.classes.panelTitle}>Network health</h2><p className={dashboardStyles.classes.panelMeta}>All monitor outcomes</p></div>
