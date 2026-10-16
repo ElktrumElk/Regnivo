@@ -1,4 +1,4 @@
-import type { ApiEnvelope, ApiFailure, AuthInput, CheckResult, Dashboard, MetricRange, Monitor, MonitorInput, Project, ProjectDetail, ProjectMetrics, Settings, User } from '../types/api.ts'
+import type { ApiEnvelope, ApiFailure, AuthInput, CheckResult, Dashboard, MetricRange, Monitor, MonitorInput, Project, ProjectDetail, ProjectMetrics, RenderDeploy, RenderDeployMode, RenderIntegrationStatus, RenderService, RenderServiceDetail, Settings, User } from '../types/api.ts'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api/v1'
 
@@ -79,6 +79,16 @@ export function resumeMonitor(monitorId: string) {
 }
 export function updateSettings(settings: Partial<Settings>) {
   return request<Settings>('/settings', { method: 'PATCH', body: JSON.stringify(settings) })
+}
+export function getRenderIntegration() { return request<RenderIntegrationStatus>('/integrations/render') }
+export function getRenderServices() { return request<RenderService[]>('/integrations/render/services') }
+export function getRenderService(serviceId: string) { return request<RenderServiceDetail>(`/integrations/render/services/${serviceId}`) }
+export function getRenderDeploy(serviceId: string, deployId: string) { return request<RenderDeploy>(`/integrations/render/services/${serviceId}/deploys/${deployId}`) }
+export function triggerRenderDeploy(serviceId: string, mode: RenderDeployMode, clearCache = false) {
+  return request<RenderDeploy>(`/integrations/render/services/${serviceId}/deploys`, { method: 'POST', body: JSON.stringify({ mode, clearCache }) })
+}
+export function restartRenderService(serviceId: string) {
+  return request<{ accepted: boolean }>(`/integrations/render/services/${serviceId}/restart`, { method: 'POST', body: JSON.stringify({}) })
 }
 export function getCurrentUser() { return request<User>('/me') }
 export function login(input: AuthInput) { return request<User>('/auth/login', { method: 'POST', body: JSON.stringify(input) }) }

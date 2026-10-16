@@ -1,4 +1,4 @@
-import { Activity, ArrowLeft, FolderKanban, Gauge, LogOut, PlusCircle, RadioTower, Settings } from 'lucide-react'
+import { Activity, ArrowLeft, Cloud, FolderKanban, Gauge, LogOut, PlusCircle, RadioTower, Settings } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { NavLink, useMatch, useNavigate } from 'react-router-dom'
 import { shellStyles } from '../styles/shellStyles.ts'
@@ -11,6 +11,7 @@ const workspaceNavigation: NavigationItem[] = [
   { label: 'Projects', path: '/app/projects', icon: FolderKanban },
   { label: 'Add monitor', path: '/app/monitors/new', icon: PlusCircle },
   { label: 'Activity', path: '/app/activity', icon: Activity },
+  { label: 'Render', path: '/app/integrations/render', icon: Cloud },
   { label: 'Settings', path: '/app/settings', icon: Settings },
 ]
 

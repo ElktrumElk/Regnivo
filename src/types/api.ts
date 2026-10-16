@@ -121,6 +121,77 @@ export interface Settings {
   retentionDays: number
 }
 
+export interface RenderIntegrationStatus {
+  configured: boolean
+}
+
+export interface RenderServiceDetails {
+  runtime?: string
+  region?: string
+  plan?: string
+  url?: string
+  healthCheckPath?: string
+}
+
+export interface RenderService {
+  id: string
+  name: string
+  ownerId: string
+  type: string
+  repo?: string
+  branch?: string
+  slug?: string
+  dashboardUrl?: string
+  suspended?: string
+  autoDeployTrigger?: string
+  createdAt?: string
+  updatedAt?: string
+  serviceDetails: RenderServiceDetails
+}
+
+export interface RenderCommit {
+  id: string
+  message?: string
+  createdAt?: string
+}
+
+export interface RenderDeploy {
+  id?: string
+  status?: string
+  trigger?: string
+  commit?: RenderCommit
+  image?: { ref?: string; sha?: string }
+  createdAt?: string
+  startedAt?: string
+  updatedAt?: string
+  finishedAt?: string
+}
+
+export interface RenderEndpoint {
+  label: string
+  url: string
+  kind: 'render' | 'health_check' | 'custom_domain' | string
+}
+
+export interface RenderDomain {
+  id: string
+  name: string
+  domainType?: string
+  verificationStatus?: string
+  redirectForName?: string
+  createdAt?: string
+}
+
+export interface RenderServiceDetail {
+  service: RenderService
+  endpoints: RenderEndpoint[]
+  domains: RenderDomain[]
+  deploys: RenderDeploy[]
+  latestDeploy?: RenderDeploy
+}
+
+export type RenderDeployMode = 'build_and_deploy' | 'deploy_only'
+
 export interface ApiEnvelope<T> { data: T }
 export interface ApiFailure { error: { message: string } }
 
