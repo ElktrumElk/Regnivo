@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Trash2 } from 'lucide-react'
 import { ErrorPanel } from '../components/ErrorPanel.tsx'
 import { LoadingPanel } from '../components/LoadingPanel.tsx'
 import { LogDetailPanel } from '../components/LogDetailPanel.tsx'
 import { PageHeader } from '../components/PageHeader.tsx'
-import { clearProjectResults, deleteResult, getProject, getProjectResults } from '../services/api.ts'
+import { clearProjectResults, deleteResult, getProject, getProjectResults, testMonitor } from '../services/api.ts'
 import { useResource } from '../services/useResource.ts'
 import { dashboardStyles } from '../styles/dashboardStyles.ts'
 import { formStyles } from '../styles/formStyles.ts'
@@ -26,6 +26,10 @@ function formatResult(result: CheckResult): string {
 export function ProjectLogPage() {
   const params = useParams()
   const projectId = params.projectId ?? ''
+  const [searchParams, setSearchParams] = useSearchParams()
+  const runMonitorId = searchParams.get('runMonitorId') ?? ''
+  const runMonitorName = searchParams.get('monitorName') ?? 'monitor'
+  const startedMonitorRef = useRef('')
 
   const loadProject = useCallback(() => getProject(projectId), [projectId])
   const loadResults = useCallback(() => getProjectResults(projectId), [projectId])
@@ -39,6 +43,8 @@ export function ProjectLogPage() {
   const [confirmClear, setConfirmClear] = useState(false)
   const [clearing, setClearing] = useState(false)
   const [logError, setLogError] = useState('')
+  const [connectionMessage, setConnectionMessage] = useState('')
+  const [connectionFailed, setConnectionFailed] = useState(false)
 
   // Silent refreshes keep the terminal steady; only the manual button shows a spinner.
   const refreshResults = useCallback(async (silent: boolean) => {
@@ -58,6 +64,32 @@ export function ProjectLogPage() {
     }, AUTO_REFRESH_MS)
     return () => window.clearInterval(interval)
   }, [refreshResults])
+
+  useEffect(() => {
+    if (!runMonitorId || startedMonitorRef.current === runMonitorId) return
+    startedMonitorRef.current = runMonitorId
+    const cleanQuery = new URLSearchParams(searchParams)
+    cleanQuery.delete('runMonitorId')
+    cleanQuery.delete('monitorName')
+    setSearchParams(cleanQuery, { replace: true })
+    setConnectionFailed(false)
+    setConnectionMessage(`Connecting to ${runMonitorName} and waiting for the first response...`)
+    testMonitor(runMonitorId)
+      .then(result => {
+        setResults(current => {
+          const existing = current ?? []
+          return [result, ...existing.filter(item => item.id !== result.id)]
+        })
+        setSelectedId(result.id)
+        setLastRefreshed(new Date().toLocaleTimeString())
+        setConnectionFailed(result.outcome !== 'success')
+        setConnectionMessage(result.outcome === 'success' ? `${runMonitorName} connected successfully.` : `${runMonitorName} responded with a failed first check.`)
+      })
+      .catch(cause => {
+        setConnectionFailed(true)
+        setConnectionMessage(cause instanceof Error ? cause.message : 'Unable to run the first monitor check.')
+      })
+  }, [runMonitorId, runMonitorName, searchParams, setResults, setSearchParams])
 
   function handleRefreshClick() {
     void refreshResults(false)
@@ -155,6 +187,7 @@ export function ProjectLogPage() {
               )}
             </div>
           </header>
+          {connectionMessage ? <p className={`${logStyles.classes.connection} ${connectionFailed ? logStyles.classes.connectionError : ''}`} role="status">{connectionMessage}</p> : null}
           {logError ? <p className={formStyles.classes.danger} role="alert">{logError}</p> : null}
           {results.length === 0 ? (
             <p className={logStyles.classes.empty}>No checks yet. Deploy a monitor to start logging.</p>

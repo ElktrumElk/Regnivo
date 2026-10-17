@@ -43,4 +43,6 @@ export const logStyles = new Estyle().defineRules({
   body: { margin: 0, padding: '10px 11px', border: '1px solid #22251f', borderRadius: '7px', backgroundColor: '#0c0e0c', color: '#c4c8c0', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '10px', lineHeight: 1.55, whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: '320px', overflow: 'auto' },
   muted: { margin: 0, color: '#5f645d', fontSize: '10px' },
   headerActions: { display: 'flex', alignItems: 'center', gap: '9px' },
+  connection: { margin: '10px 16px 0', padding: '9px 11px', border: '1px solid #39482c', borderRadius: '7px', color: '#b7d996', backgroundColor: '#172015', fontSize: '10px' },
+  connectionError: { borderColor: '#553333', color: '#e58c8c', backgroundColor: '#1d1515' },
 }).defineMedia({ '(max-width: 900px)': { layout: { flexDirection: 'column' }, detailPanel: { position: 'static', width: '100%' }, listPanel: { width: '100%' } } }).mount('log')

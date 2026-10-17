@@ -17,6 +17,8 @@ import type { Monitor, MonitorInput } from '../types/api.ts'
 const METHOD_OPTIONS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 
 const INTERVAL_OPTIONS: Array<{ value: number; label: string }> = [
+  { value: 60, label: 'Every minute' },
+  { value: 300, label: 'Every 5 minutes' },
   { value: 600, label: 'Every 10 minutes' },
   { value: 1200, label: 'Every 20 minutes' },
   { value: 1500, label: 'Every 25 minutes' },

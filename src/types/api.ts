@@ -121,6 +121,95 @@ export interface Settings {
   retentionDays: number
 }
 
+export type IntegrationProvider = 'render' | 'vercel'
+
+export interface IntegrationStatus {
+  configured: boolean
+  provider: IntegrationProvider | string
+  scopeId?: string
+  accountName?: string
+}
+
+export interface ServiceDetails {
+  runtime?: string
+  region?: string
+  plan?: string
+  url?: string
+  healthCheckPath?: string
+}
+
+export interface Service {
+  id: string
+  name: string
+  ownerId?: string
+  type: string
+  repo?: string
+  branch?: string
+  slug?: string
+  dashboardUrl?: string
+  suspended?: string
+  autoDeployTrigger?: string
+  createdAt?: string
+  updatedAt?: string
+  serviceDetails: ServiceDetails
+}
+
+export interface DeployCommit {
+  id: string
+  message?: string
+  createdAt?: string
+}
+
+export interface Deploy {
+  id?: string
+  status?: string
+  trigger?: string
+  commit?: DeployCommit
+  image?: { ref?: string; sha?: string }
+  createdAt?: string
+  startedAt?: string
+  updatedAt?: string
+  finishedAt?: string
+}
+
+export interface ServiceEndpoint {
+  label: string
+  url: string
+  kind: string
+}
+
+export interface CustomDomain {
+  id: string
+  name: string
+  domainType?: string
+  verificationStatus?: string
+  redirectForName?: string
+  createdAt?: string
+}
+
+export interface ServiceDetail {
+  service: Service
+  endpoints: ServiceEndpoint[]
+  domains: CustomDomain[]
+  deploys: Deploy[]
+  latestDeploy?: Deploy
+}
+
+export type DeployMode = 'build_and_deploy' | 'deploy_only'
+
+export interface DetectedEndpoint {
+  url: string
+  method: string
+  label: string
+  kind: string
+  status: number
+}
+
+export interface DetectEndpointsResult {
+  root: string
+  endpoints: DetectedEndpoint[]
+}
+
 export interface ApiEnvelope<T> { data: T }
 export interface ApiFailure { error: { message: string } }
 
