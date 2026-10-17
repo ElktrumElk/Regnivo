@@ -1,4 +1,4 @@
-import { Activity, ArrowLeft, Cloud, FolderKanban, Gauge, LogOut, PlusCircle, RadioTower, Settings } from 'lucide-react'
+import { Activity, ArrowLeft, BookOpen, Cloud, FolderKanban, Gauge, LogOut, PlusCircle, RadioTower, Settings } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { NavLink, useMatch, useNavigate } from 'react-router-dom'
 import { shellStyles } from '../styles/shellStyles.ts'
@@ -64,6 +64,10 @@ export function Sidebar() {
         )}
       </nav>
       <div className={shellStyles.classes.sidebarFooter}>
+        <NavLink to="/app/guide" className={shellStyles.classes.guideLink}>
+          <BookOpen size={16} aria-hidden="true" />
+          <span>User guide</span>
+        </NavLink>
         <div className={shellStyles.classes.user}>
           <div className={shellStyles.classes.avatar}>{initials}</div>
           <div className={shellStyles.classes.userDetails}><p className={shellStyles.classes.userName}>{user?.name}</p><p className={shellStyles.classes.userEmail}>{user?.email}</p></div>

@@ -10,6 +10,7 @@ const SECTION_LABELS: Record<string, string> = {
   activity: 'Activity',
   integrations: 'Integrations',
   services: 'Services',
+  guide: 'User guide',
   settings: 'Settings',
 }
 

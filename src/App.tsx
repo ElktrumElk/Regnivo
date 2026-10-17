@@ -13,6 +13,7 @@ import { LoginPage } from './pages/LoginPage.tsx'
 import { RegisterPage } from './pages/RegisterPage.tsx'
 import { IntegrationPage } from './pages/IntegrationPage.tsx'
 import { ServicesPage } from './pages/ServicesPage.tsx'
+import { UserGuidePage } from './pages/UserGuidePage.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
 import { AuthProvider } from './services/AuthContext.tsx'
 
@@ -39,6 +40,7 @@ export default function App() {
               <Route path="services" element={<ServicesPage />} />
               <Route path="services/:provider" element={<IntegrationPage />} />
               <Route path="integrations/render" element={<Navigate to="/app/services/render" replace />} />
+              <Route path="guide" element={<UserGuidePage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
           </Route>

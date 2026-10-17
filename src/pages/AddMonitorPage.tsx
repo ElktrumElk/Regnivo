@@ -72,6 +72,11 @@ function renderEndpointOption(endpoint: ServiceEndpoint) {
   return <option key={`${endpoint.kind}-${endpoint.url}`} value={endpoint.url}>{endpoint.label} · {endpoint.url}</option>
 }
 
+function withSelectedEndpoint(endpoints: ServiceEndpoint[], selected: string): ServiceEndpoint[] {
+  if (!selected || endpoints.some(endpoint => endpoint.url === selected)) return endpoints
+  return [{ label: 'Selected endpoint', url: selected, kind: 'detected' }, ...endpoints]
+}
+
 async function loadProviderServices(provider: ProviderConfig): Promise<ServiceOption[]> {
   try {
     const services = await getIntegrationServices(provider.id)
@@ -106,7 +111,7 @@ export function AddMonitorPage() {
   const [serviceOptions, setServiceOptions] = useState<ServiceOption[]>(cachedServiceOptions)
   const [selectedProvider, setSelectedProvider] = useState<IntegrationProvider | ''>(initialProvider)
   const [serviceId, setServiceId] = useState(initialServiceId)
-  const [serviceEndpoints, setServiceEndpoints] = useState<ServiceEndpoint[]>(initialDetail?.endpoints ?? [])
+  const [serviceEndpoints, setServiceEndpoints] = useState<ServiceEndpoint[]>(() => (initialDetail ? withSelectedEndpoint(initialDetail.endpoints, initialEndpoint) : []))
   const [selectedEndpoint, setSelectedEndpoint] = useState(initialEndpoint)
   const [servicesLoading, setServicesLoading] = useState(Boolean(initialServiceId) && !initialDetail)
   const [servicesMessage, setServicesMessage] = useState('')
@@ -129,11 +134,13 @@ export function AddMonitorPage() {
     getIntegrationService(selectedProvider, serviceId)
       .then(detail => {
         if (!active) return
-        setServiceEndpoints(detail.endpoints)
-        const chosen = detail.endpoints.find(endpoint => endpoint.url === initialEndpoint) ?? detail.endpoints[0]
-        if (chosen) {
-          setSelectedEndpoint(chosen.url)
-          setURL(chosen.url)
+        setServiceEndpoints(withSelectedEndpoint(detail.endpoints, initialEndpoint))
+        if (initialEndpoint) {
+          setSelectedEndpoint(initialEndpoint)
+          setURL(initialEndpoint)
+        } else if (detail.endpoints[0]) {
+          setSelectedEndpoint(detail.endpoints[0].url)
+          setURL(detail.endpoints[0].url)
         }
         setName(current => current || detail.service.name)
       })
