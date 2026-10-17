@@ -5,11 +5,13 @@ import { ErrorPanel } from '../components/ErrorPanel.tsx'
 import { HeaderEditor } from '../components/HeaderEditor.tsx'
 import { LoadingPanel } from '../components/LoadingPanel.tsx'
 import { PageHeader } from '../components/PageHeader.tsx'
-import { createMonitor, getProjects, getRenderService, getRenderServices } from '../services/api.ts'
+import { createMonitor, getIntegrationService, getIntegrationServices, getProjects, peekIntegrationService, peekIntegrationServices } from '../services/api.ts'
+import { PROVIDERS, providerById } from '../services/providers.ts'
+import type { ProviderConfig } from '../services/providers.ts'
 import { useResource } from '../services/useResource.ts'
 import { dashboardStyles } from '../styles/dashboardStyles.ts'
 import { formStyles } from '../styles/formStyles.ts'
-import type { Project, RenderEndpoint, RenderService } from '../types/api.ts'
+import type { IntegrationProvider, Project, Service, ServiceEndpoint } from '../types/api.ts'
 import { headerRowsToRecord } from '../utils/headers.ts'
 import type { HeaderRow } from '../utils/headers.ts'
 
@@ -59,12 +61,41 @@ function renderRetryCountOption(count: number) {
   return <option key={count} value={count}>{count === 0 ? 'No retries' : `${count} ${count === 1 ? 'retry' : 'retries'}`}</option>
 }
 
+interface ServiceOption { provider: IntegrationProvider; service: Service }
+
+function renderServiceOption(option: ServiceOption) {
+  const providerName = providerById(option.provider)?.name ?? option.provider
+  return <option key={`${option.provider}:${option.service.id}`} value={`${option.provider}:${option.service.id}`}>{option.service.name} · {option.service.type.replaceAll('_', ' ')} · {providerName}</option>
+}
+
+function renderEndpointOption(endpoint: ServiceEndpoint) {
+  return <option key={`${endpoint.kind}-${endpoint.url}`} value={endpoint.url}>{endpoint.label} · {endpoint.url}</option>
+}
+
+async function loadProviderServices(provider: ProviderConfig): Promise<ServiceOption[]> {
+  try {
+    const services = await getIntegrationServices(provider.id)
+    return services.filter(service => Boolean(service.serviceDetails.url)).map(service => ({ provider: provider.id, service }))
+  } catch {
+    return []
+  }
+}
+
+function cachedServiceOptions(): ServiceOption[] {
+  return PROVIDERS.flatMap(provider => {
+    const services = peekIntegrationServices(provider.id) ?? []
+    return services.filter(service => Boolean(service.serviceDetails.url)).map(service => ({ provider: provider.id, service }))
+  })
+}
+
 export function AddMonitorPage() {
   const params = useParams()
   const scopedProjectId = params.projectId
   const [searchParams] = useSearchParams()
-  const initialServiceId = searchParams.get('renderServiceId') ?? ''
+  const initialProvider = (searchParams.get('provider') as IntegrationProvider | null) ?? (searchParams.get('renderServiceId') ? 'render' : '')
+  const initialServiceId = searchParams.get('serviceId') ?? searchParams.get('renderServiceId') ?? ''
   const initialEndpoint = searchParams.get('endpoint') ?? ''
+  const initialDetail = initialProvider && initialServiceId ? peekIntegrationService(initialProvider, initialServiceId) : undefined
 
   const { data: projects, error, loading } = useResource(getProjects)
   const [message, setMessage] = useState('')
@@ -72,57 +103,70 @@ export function AddMonitorPage() {
   const [headerRows, setHeaderRows] = useState<HeaderRow[]>([])
   const [name, setName] = useState('')
   const [url, setURL] = useState(initialEndpoint)
-  const [renderServices, setRenderServices] = useState<RenderService[]>([])
-  const [renderServiceId, setRenderServiceId] = useState(initialServiceId)
-  const [renderEndpoints, setRenderEndpoints] = useState<RenderEndpoint[]>([])
-  const [renderEndpointURL, setRenderEndpointURL] = useState(initialEndpoint)
-  const [renderLoading, setRenderLoading] = useState(Boolean(initialServiceId))
-  const [renderMessage, setRenderMessage] = useState('')
+  const [serviceOptions, setServiceOptions] = useState<ServiceOption[]>(cachedServiceOptions)
+  const [selectedProvider, setSelectedProvider] = useState<IntegrationProvider | ''>(initialProvider)
+  const [serviceId, setServiceId] = useState(initialServiceId)
+  const [serviceEndpoints, setServiceEndpoints] = useState<ServiceEndpoint[]>(initialDetail?.endpoints ?? [])
+  const [selectedEndpoint, setSelectedEndpoint] = useState(initialEndpoint)
+  const [servicesLoading, setServicesLoading] = useState(Boolean(initialServiceId) && !initialDetail)
+  const [servicesMessage, setServicesMessage] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
     let active = true
-    getRenderServices()
-      .then(services => { if (active) setRenderServices(services.filter(service => Boolean(service.serviceDetails.url))) })
-      .catch(() => { if (active) setRenderMessage('Render services are unavailable. Manual URL entry still works.') })
+    Promise.all(PROVIDERS.map(loadProviderServices)).then(results => {
+      if (!active) return
+      const available = results.flat()
+      setServiceOptions(available)
+      if (available.length === 0) setServicesMessage('No connected services found. Manual URL entry still works.')
+    })
     return () => { active = false }
   }, [])
 
   useEffect(() => {
-    if (!renderServiceId) return
+    if (!selectedProvider || !serviceId) return
     let active = true
-    getRenderService(renderServiceId)
+    getIntegrationService(selectedProvider, serviceId)
       .then(detail => {
         if (!active) return
-        setRenderEndpoints(detail.endpoints)
-        const selected = detail.endpoints.find(endpoint => endpoint.url === initialEndpoint) ?? detail.endpoints[0]
-        if (selected) {
-          setRenderEndpointURL(selected.url)
-          setURL(selected.url)
+        setServiceEndpoints(detail.endpoints)
+        const chosen = detail.endpoints.find(endpoint => endpoint.url === initialEndpoint) ?? detail.endpoints[0]
+        if (chosen) {
+          setSelectedEndpoint(chosen.url)
+          setURL(chosen.url)
         }
         setName(current => current || detail.service.name)
       })
       .catch(cause => {
-        if (active) setRenderMessage(cause instanceof Error ? cause.message : 'Unable to load Render endpoints.')
+        if (active) setServicesMessage(cause instanceof Error ? cause.message : 'Unable to load this service.')
       })
-      .finally(() => { if (active) setRenderLoading(false) })
+      .finally(() => {
+        if (active) setServicesLoading(false)
+      })
     return () => { active = false }
-  }, [initialEndpoint, renderServiceId])
+  }, [selectedProvider, serviceId, initialEndpoint])
 
   function handleNameChange(event: ChangeEvent<HTMLInputElement>) { setName(event.target.value) }
   function handleURLChange(event: ChangeEvent<HTMLInputElement>) { setURL(event.target.value) }
 
-  function handleRenderServiceChange(event: ChangeEvent<HTMLSelectElement>) {
-    const serviceId = event.target.value
-    setRenderServiceId(serviceId)
-    setRenderEndpointURL('')
-    setRenderEndpoints([])
-    setRenderLoading(Boolean(serviceId))
-    setRenderMessage('')
+  function handleServiceChange(event: ChangeEvent<HTMLSelectElement>) {
+    const value = event.target.value
+    setServiceEndpoints([])
+    setSelectedEndpoint('')
+    setServicesMessage('')
+    if (!value) {
+      setSelectedProvider('')
+      setServiceId('')
+      return
+    }
+    const separator = value.indexOf(':')
+    setSelectedProvider(value.slice(0, separator) as IntegrationProvider)
+    setServiceId(value.slice(separator + 1))
+    setServicesLoading(true)
   }
 
-  function handleRenderEndpointChange(event: ChangeEvent<HTMLSelectElement>) {
-    setRenderEndpointURL(event.target.value)
+  function handleEndpointChange(event: ChangeEvent<HTMLSelectElement>) {
+    setSelectedEndpoint(event.target.value)
     setURL(event.target.value)
   }
 
@@ -171,7 +215,8 @@ export function AddMonitorPage() {
   }
 
   const scopedProjectName = scopedProjectId ? projects.find(project => project.id === scopedProjectId)?.name : undefined
-  const description = scopedProjectId ? 'Register an endpoint in this project. The live request log opens and runs the first check after deployment.' : 'Register a public HTTPS endpoint manually or select one directly from a connected Render service.'
+  const description = scopedProjectId ? 'Register an endpoint in this project. The live request log opens and runs the first check after deployment.' : 'Register a public HTTPS endpoint manually or select one directly from a connected service.'
+  const selectedProviderName = providerById(selectedProvider || undefined)?.name
 
   return (
     <>
@@ -179,22 +224,22 @@ export function AddMonitorPage() {
       <section className={formStyles.classes.card}>
         <form className={formStyles.classes.form} onSubmit={handleSubmit}>
           <div className={formStyles.classes.field}>
-            <label className={formStyles.classes.label} htmlFor="render-service">Endpoint source</label>
-            <select className={formStyles.classes.input} id="render-service" value={renderServiceId} onChange={handleRenderServiceChange}>
+            <label className={formStyles.classes.label} htmlFor="service-source">Endpoint source</label>
+            <select className={formStyles.classes.input} id="service-source" value={selectedProvider && serviceId ? `${selectedProvider}:${serviceId}` : ''} onChange={handleServiceChange}>
               <option value="">Manual HTTPS URL</option>
-              {renderServices.map(service => <option key={service.id} value={service.id}>{service.name} · {service.type.replaceAll('_', ' ')}</option>)}
+              {serviceOptions.map(renderServiceOption)}
             </select>
-            {renderMessage ? <p className={formStyles.classes.hint}>{renderMessage}</p> : <p className={formStyles.classes.hint}>Select a Render service to load its public URL, health check, and verified custom domains.</p>}
-            {renderServices.length === 0 ? <Link className={dashboardStyles.classes.textLink} to="/app/services/render">Open Render integration</Link> : null}
+            {servicesMessage ? <p className={formStyles.classes.hint}>{servicesMessage}</p> : <p className={formStyles.classes.hint}>Select a connected service to load its public URL, health check, and verified custom domains.</p>}
+            {serviceOptions.length === 0 ? <Link className={dashboardStyles.classes.textLink} to="/app/services">Connect a service</Link> : null}
           </div>
 
-          {renderServiceId ? (
+          {selectedProvider && serviceId ? (
             <div className={formStyles.classes.field}>
-              <label className={formStyles.classes.label} htmlFor="render-endpoint">Render API or endpoint</label>
-              <select className={formStyles.classes.input} id="render-endpoint" value={renderEndpointURL} onChange={handleRenderEndpointChange} disabled={renderLoading}>
-                {renderLoading ? <option value="">Loading endpoints...</option> : null}
-                {!renderLoading && renderEndpoints.length === 0 ? <option value="">No public endpoint returned</option> : null}
-                {renderEndpoints.map(endpoint => <option key={`${endpoint.kind}-${endpoint.url}`} value={endpoint.url}>{endpoint.label} · {endpoint.url}</option>)}
+              <label className={formStyles.classes.label} htmlFor="service-endpoint">{selectedProviderName ?? 'Service'} API or endpoint</label>
+              <select className={formStyles.classes.input} id="service-endpoint" value={selectedEndpoint} onChange={handleEndpointChange} disabled={servicesLoading}>
+                {servicesLoading ? <option value="">Loading endpoints...</option> : null}
+                {!servicesLoading && serviceEndpoints.length === 0 ? <option value="">No public endpoint returned</option> : null}
+                {serviceEndpoints.map(renderEndpointOption)}
               </select>
             </div>
           ) : null}
@@ -219,7 +264,7 @@ export function AddMonitorPage() {
           <div className={formStyles.classes.field}>
             <label className={formStyles.classes.label} htmlFor="monitor-url">Target URL</label>
             <input className={formStyles.classes.input} id="monitor-url" name="url" type="url" placeholder="https://api.example.com/health" pattern="https://.*" value={url} onChange={handleURLChange} required />
-            <p className={formStyles.classes.hint}>You can append an API route to a selected Render origin. Private, loopback, metadata, reserved, and credential-bearing destinations are blocked.</p>
+            <p className={formStyles.classes.hint}>You can append an API route to a selected service origin. Private, loopback, metadata, reserved, and credential-bearing destinations are blocked.</p>
           </div>
           <div className={formStyles.classes.row}>
             <div className={formStyles.classes.field}>

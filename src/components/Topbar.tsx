@@ -9,6 +9,7 @@ const SECTION_LABELS: Record<string, string> = {
   monitors: 'Add monitor',
   activity: 'Activity',
   integrations: 'Integrations',
+  services: 'Services',
   settings: 'Settings',
 }
 
@@ -17,6 +18,7 @@ const SUB_LABELS: Record<string, string> = {
   settings: 'Settings',
   monitors: 'Add monitor',
   render: 'Render',
+  vercel: 'Vercel',
 }
 
 // Resolves the human-readable project name for the breadcrumb trail.
@@ -35,7 +37,7 @@ function buildCrumbs(segments: string[], projectName: string): string[] {
   if (!section) return [...crumbs, 'Overview']
   crumbs.push(SECTION_LABELS[section] ?? 'Overview')
   if (section === 'projects' && segments[2]) crumbs.push(projectName || segments[2])
-  if (section === 'integrations' && segments[2]) crumbs.push(SUB_LABELS[segments[2]] ?? segments[2])
+  if ((section === 'integrations' || section === 'services') && segments[2]) crumbs.push(SUB_LABELS[segments[2]] ?? segments[2])
   const sub = SUB_LABELS[segments[3] ?? '']
   if (sub) crumbs.push(sub)
   return crumbs

@@ -121,13 +121,16 @@ export interface Settings {
   retentionDays: number
 }
 
-export interface RenderIntegrationStatus {
+export type IntegrationProvider = 'render' | 'vercel'
+
+export interface IntegrationStatus {
   configured: boolean
-  ownerId?: string
+  provider: IntegrationProvider | string
+  scopeId?: string
   accountName?: string
 }
 
-export interface RenderServiceDetails {
+export interface ServiceDetails {
   runtime?: string
   region?: string
   plan?: string
@@ -135,10 +138,10 @@ export interface RenderServiceDetails {
   healthCheckPath?: string
 }
 
-export interface RenderService {
+export interface Service {
   id: string
   name: string
-  ownerId: string
+  ownerId?: string
   type: string
   repo?: string
   branch?: string
@@ -148,20 +151,20 @@ export interface RenderService {
   autoDeployTrigger?: string
   createdAt?: string
   updatedAt?: string
-  serviceDetails: RenderServiceDetails
+  serviceDetails: ServiceDetails
 }
 
-export interface RenderCommit {
+export interface DeployCommit {
   id: string
   message?: string
   createdAt?: string
 }
 
-export interface RenderDeploy {
+export interface Deploy {
   id?: string
   status?: string
   trigger?: string
-  commit?: RenderCommit
+  commit?: DeployCommit
   image?: { ref?: string; sha?: string }
   createdAt?: string
   startedAt?: string
@@ -169,13 +172,13 @@ export interface RenderDeploy {
   finishedAt?: string
 }
 
-export interface RenderEndpoint {
+export interface ServiceEndpoint {
   label: string
   url: string
-  kind: 'render' | 'health_check' | 'custom_domain' | string
+  kind: string
 }
 
-export interface RenderDomain {
+export interface CustomDomain {
   id: string
   name: string
   domainType?: string
@@ -184,15 +187,28 @@ export interface RenderDomain {
   createdAt?: string
 }
 
-export interface RenderServiceDetail {
-  service: RenderService
-  endpoints: RenderEndpoint[]
-  domains: RenderDomain[]
-  deploys: RenderDeploy[]
-  latestDeploy?: RenderDeploy
+export interface ServiceDetail {
+  service: Service
+  endpoints: ServiceEndpoint[]
+  domains: CustomDomain[]
+  deploys: Deploy[]
+  latestDeploy?: Deploy
 }
 
-export type RenderDeployMode = 'build_and_deploy' | 'deploy_only'
+export type DeployMode = 'build_and_deploy' | 'deploy_only'
+
+export interface DetectedEndpoint {
+  url: string
+  method: string
+  label: string
+  kind: string
+  status: number
+}
+
+export interface DetectEndpointsResult {
+  root: string
+  endpoints: DetectedEndpoint[]
+}
 
 export interface ApiEnvelope<T> { data: T }
 export interface ApiFailure { error: { message: string } }
