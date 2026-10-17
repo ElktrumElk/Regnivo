@@ -11,7 +11,7 @@ const workspaceNavigation: NavigationItem[] = [
   { label: 'Projects', path: '/app/projects', icon: FolderKanban },
   { label: 'Add monitor', path: '/app/monitors/new', icon: PlusCircle },
   { label: 'Activity', path: '/app/activity', icon: Activity },
-  { label: 'Render', path: '/app/integrations/render', icon: Cloud },
+  { label: 'Services', path: '/app/services', icon: Cloud },
   { label: 'Settings', path: '/app/settings', icon: Settings },
 ]
 

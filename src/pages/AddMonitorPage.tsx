@@ -185,7 +185,7 @@ export function AddMonitorPage() {
               {renderServices.map(service => <option key={service.id} value={service.id}>{service.name} · {service.type.replaceAll('_', ' ')}</option>)}
             </select>
             {renderMessage ? <p className={formStyles.classes.hint}>{renderMessage}</p> : <p className={formStyles.classes.hint}>Select a Render service to load its public URL, health check, and verified custom domains.</p>}
-            {renderServices.length === 0 ? <Link className={dashboardStyles.classes.textLink} to="/app/integrations/render">Open Render integration</Link> : null}
+            {renderServices.length === 0 ? <Link className={dashboardStyles.classes.textLink} to="/app/services/render">Open Render integration</Link> : null}
           </div>
 
           {renderServiceId ? (

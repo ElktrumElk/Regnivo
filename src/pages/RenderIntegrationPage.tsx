@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { MouseEvent } from 'react'
-import { ExternalLink, Play, RefreshCw, Repeat2 } from 'lucide-react'
+import { ExternalLink, Play, RefreshCw, Repeat2, Unplug } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { ErrorPanel } from '../components/ErrorPanel.tsx'
 import { LoadingPanel } from '../components/LoadingPanel.tsx'
 import { PageHeader } from '../components/PageHeader.tsx'
-import { getRenderIntegration, getRenderService, getRenderServices, restartRenderService, triggerRenderDeploy } from '../services/api.ts'
+import { RenderConnectPanel } from '../components/RenderConnectPanel.tsx'
+import { disconnectRender, getRenderIntegration, getRenderService, getRenderServices, restartRenderService, triggerRenderDeploy } from '../services/api.ts'
 import { useResource } from '../services/useResource.ts'
 import { dashboardStyles } from '../styles/dashboardStyles.ts'
 import { integrationStyles } from '../styles/integrationStyles.ts'
@@ -31,7 +32,7 @@ function shortCommit(deploy: RenderDeploy | undefined): string {
 }
 
 export function RenderIntegrationPage() {
-  const { data: overview, error, loading } = useResource(loadOverview)
+  const { data: overview, error, loading, setData } = useResource(loadOverview)
   const [selectedId, setSelectedId] = useState('')
   const [detail, setDetail] = useState<RenderServiceDetail | null>(null)
   const [detailLoading, setDetailLoading] = useState(true)
@@ -39,8 +40,36 @@ export function RenderIntegrationPage() {
   const [action, setAction] = useState('')
   const [message, setMessage] = useState('')
   const [messageError, setMessageError] = useState(false)
+  const [disconnecting, setDisconnecting] = useState(false)
 
   const activeServiceId = selectedId || overview?.services[0]?.id || ''
+
+  async function handleConnected() {
+    try {
+      setData({ configured: true, services: await getRenderServices() })
+    } catch (cause) {
+      setData({ configured: true, services: [] })
+      setMessageError(true)
+      setMessage(cause instanceof Error ? cause.message : 'Render connected, but services could not be loaded.')
+    }
+  }
+
+  async function handleDisconnect() {
+    setDisconnecting(true)
+    setMessage('')
+    setMessageError(false)
+    try {
+      await disconnectRender()
+      setDetail(null)
+      setSelectedId('')
+      setData({ configured: false, services: [] })
+    } catch (cause) {
+      setMessageError(true)
+      setMessage(cause instanceof Error ? cause.message : 'Unable to disconnect Render.')
+    } finally {
+      setDisconnecting(false)
+    }
+  }
 
   const refreshDetail = useCallback(async () => {
     if (!activeServiceId) return
@@ -155,17 +184,18 @@ export function RenderIntegrationPage() {
   if (!overview.configured) {
     return (
       <>
-        <PageHeader eyebrow="Integration" title="Render" description="Connect Regnivo to Render services without exposing the Render API key to the browser." />
-        <section className={integrationStyles.classes.card}>
-          <p className={integrationStyles.classes.empty}>Render is not configured. Add RENDER_API_KEY to the backend environment and redeploy the API.</p>
-        </section>
+        <PageHeader eyebrow="Service" title="Render" description="Connect your own Render account. Credentials stay on the server, encrypted per user." />
+        <RenderConnectPanel onConnected={handleConnected} />
       </>
     )
   }
 
+  const disconnectAction = <button className={dashboardStyles.classes.secondaryButton} type="button" onClick={handleDisconnect} disabled={disconnecting}><Unplug size={14} />{disconnecting ? 'Disconnecting...' : 'Disconnect'}</button>
+
   return (
     <>
-      <PageHeader eyebrow="Integration" title="Render services" description="Inspect services and commits, trigger deployments, restart live services, and create endpoint monitors directly from Render URLs." />
+      <PageHeader eyebrow="Service" title="Render services" description="Inspect services and commits, trigger deployments, restart live services, and create endpoint monitors directly from Render URLs." actions={disconnectAction} />
+      {message ? <p className={messageError ? integrationStyles.classes.error : integrationStyles.classes.notice} role="status">{message}</p> : null}
       <div className={integrationStyles.classes.layout}>
         <aside className={integrationStyles.classes.services} aria-label="Render services">
           <h2 className={integrationStyles.classes.sectionTitle}>Services</h2>

@@ -12,6 +12,7 @@ import { SettingsPage } from './pages/SettingsPage.tsx'
 import { LoginPage } from './pages/LoginPage.tsx'
 import { RegisterPage } from './pages/RegisterPage.tsx'
 import { RenderIntegrationPage } from './pages/RenderIntegrationPage.tsx'
+import { ServicesPage } from './pages/ServicesPage.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
 import { AuthProvider } from './services/AuthContext.tsx'
 
@@ -35,7 +36,9 @@ export default function App() {
               <Route path="projects/:projectId/monitors/:monitorId/edit" element={<EditMonitorPage />} />
               <Route path="monitors/new" element={<AddMonitorPage />} />
               <Route path="activity" element={<ActivityPage />} />
-              <Route path="integrations/render" element={<RenderIntegrationPage />} />
+              <Route path="services" element={<ServicesPage />} />
+              <Route path="services/render" element={<RenderIntegrationPage />} />
+              <Route path="integrations/render" element={<Navigate to="/app/services/render" replace />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
           </Route>

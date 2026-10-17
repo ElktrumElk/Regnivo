@@ -81,6 +81,12 @@ export function updateSettings(settings: Partial<Settings>) {
   return request<Settings>('/settings', { method: 'PATCH', body: JSON.stringify(settings) })
 }
 export function getRenderIntegration() { return request<RenderIntegrationStatus>('/integrations/render') }
+export function connectRender(input: { apiKey: string; ownerId: string }) {
+  return request<RenderIntegrationStatus>('/integrations/render', { method: 'PUT', body: JSON.stringify(input) })
+}
+export function disconnectRender() {
+  return request<RenderIntegrationStatus>('/integrations/render', { method: 'DELETE' })
+}
 export function getRenderServices() { return request<RenderService[]>('/integrations/render/services') }
 export function getRenderService(serviceId: string) { return request<RenderServiceDetail>(`/integrations/render/services/${serviceId}`) }
 export function getRenderDeploy(serviceId: string, deployId: string) { return request<RenderDeploy>(`/integrations/render/services/${serviceId}/deploys/${deployId}`) }

@@ -123,6 +123,8 @@ export interface Settings {
 
 export interface RenderIntegrationStatus {
   configured: boolean
+  ownerId?: string
+  accountName?: string
 }
 
 export interface RenderServiceDetails {
